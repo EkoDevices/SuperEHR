@@ -172,81 +172,127 @@ RSpec.describe SuperEHR::DrChronoAPI do
 end
 
 RSpec.describe SuperEHR::AllScriptsAPI do
-    describe "allscripts" do
-        it "describes an instance of Touchworks AllScriptsAPI" do
-            VCR.use_cassette "AllScriptsAPI/create_allscripts" do
-                client = SuperEHR.allscripts("jmedici", "password01", ENV["ALLSCRIPTS_APP_USERNAME"], ENV["ALLSCRIPTS_APP_PASSWORD"], ENV["ALLSCRIPTS_APP_NAME"], true)
-                VCR.use_cassette "AllScriptsAPI/Touchworks/get_patient" do
-                    patient = client.get_patient(33)
-                    expect(patient).to be_an_instance_of(Hash)
-                end
 
-                VCR.use_cassette "AllScriptsAPI/Touchworks/get_changed_patients_ids" do
-                    patient_ids = client.get_changed_patients_ids(Date.today)
-                    expect(patient_ids.length).to eq(10)
-                end
+    context "when using touchworks" do
 
-                VCR.use_cassette "AllScriptsAPI/Touchworks/get_changed_patients" do
-                    timestamp = Date.today
-                    patients_since_now = client.get_changed_patients(timestamp)
-                    expect(patients_since_now.length).to eq(10)
-                end
+        VCR.use_cassette "AllScriptsAPI/create_allscripts" do
 
-                VCR.use_cassette "AllScriptsAPI/Touchworks/get_scheduled_patients" do
-                    scheduled_patients = client.get_scheduled_patients(Date.today)
-                    # expect(scheduled_patients.length).to eq(7)
-                end
+            client = SuperEHR.allscripts("jmedici", "password01", ENV["ALLSCRIPTS_APP_USERNAME"], ENV["ALLSCRIPTS_APP_PASSWORD"], ENV["ALLSCRIPTS_APP_NAME"], true)
 
-                VCR.use_cassette "AllScriptsAPI/Touchworks/upload_pdf" do
-                    filepath = "examples/test.pdf"
-                    description = "example.pdf"
-                    patient_id = 33
-                    response = client.upload_document(patient_id, filepath, description)
-                    expect(response[0]["savedocumentimageinfo"]).to be_an_instance_of(Array)
+            describe "#get_patient" do
+                it "gets a patient from a specified id" do
+                    VCR.use_cassette "AllScriptsAPI/Touchworks/get_patient" do
+                        patient = client.get_patient(33)
+                        expect(patient).to be_an_instance_of(Hash)
+                    end
                 end
-
-                VCR.use_cassette "AllScriptsAPI/Touchworks/get_all_patients" do
-                    all_patients = client.get_changed_patients("01/01/1900")
-                end
-
             end
+
+            describe "#get_changed_patients_ids" do
+                it "gets the id's of changed patients since a given date" do
+                    VCR.use_cassette "AllScriptsAPI/Touchworks/get_changed_patients_ids" do
+                        patient_ids = client.get_changed_patients_ids(Date.today)
+                        expect(patient_ids.length).to eq(10)
+                    end
+                end
+            end
+
+            describe "#get_changed_patients" do
+                it "gets all changed patients since agiven date" do
+                    VCR.use_cassette "AllScriptsAPI/Touchworks/get_changed_patients" do
+                        timestamp = Date.today
+                        patients_since_now = client.get_changed_patients(timestamp)
+                        expect(patients_since_now.length).to eq(10)
+                    end
+                end
+            end
+
+            describe "#get_scheduled_patients" do
+                it "gets all patients scheduled for a specified date" do
+                    VCR.use_cassette "AllScriptsAPI/Touchworks/get_scheduled_patients" do
+                        pending "need to fix"
+                        scheduled_patients = client.get_scheduled_patients(Date.today)
+                        (expect(scheduled_patients.length).to eq(7))
+                    end
+                end
+            end
+
+            describe "#upload_document" do
+                it "uploads a PDF to a patients record" do
+                    VCR.use_cassette "AllScriptsAPI/Touchworks/upload_pdf" do
+                        filepath = "examples/test.pdf"
+                        description = "example.pdf"
+                        patient_id = 33
+                        response = client.upload_document(patient_id, filepath, description)
+                        expect(response[0]["savedocumentimageinfo"]).to be_an_instance_of(Array)
+                    end
+                end
+            end
+
         end
-        it "describes an instance of professional AllScriptsAPI" do
-            VCR.use_cassette "AllScriptsAPI/Professional/create_allscripts" do
-                client = SuperEHR.allscripts("terry", "manning", ENV["ALLSCRIPTS_APP_USERNAME"], ENV["ALLSCRIPTS_APP_PASSWORD"], ENV["ALLSCRIPTS_APP_NAME"], false)
-                VCR.use_cassette "AllScriptsAPI/Professional/get_patient" do
-                    patient = client.get_patient(1)
-                    expect(patient["Firstname"]).to eq("James")
+
+    end
+
+    context "when using professional" do
+
+        VCR.use_cassette "AllScriptsAPI/Professional/create_allscripts" do
+
+            client = SuperEHR.allscripts("terry", "manning", ENV["ALLSCRIPTS_APP_USERNAME"], ENV["ALLSCRIPTS_APP_PASSWORD"], ENV["ALLSCRIPTS_APP_NAME"], false)
+
+            describe "#get_patient" do
+                it "gets a patient from a specified id" do
+                    VCR.use_cassette "AllScriptsAPI/Professional/get_patient" do
+                        patient = client.get_patient(1)
+                        expect(patient["Firstname"]).to eq("James")
+                    end
                 end
+            end
 
-                VCR.use_cassette "AllScriptsAPI/Professional/get_changed_patients_ids" do
-                    patient_ids = client.get_changed_patients_ids('01/01/2013')
-                    expect(patient_ids.length).to eq(339)
+            describe "#get_changed_patients_ids" do
+                it "gets the id's of changed patients since a given date" do
+                    VCR.use_cassette "AllScriptsAPI/Professional/get_changed_patients_ids" do
+                        patient_ids = client.get_changed_patients_ids('01/01/2013')
+                        expect(patient_ids.length).to eq(339)
 
+                    end
                 end
+            end
 
-                VCR.use_cassette "AllScriptsAPI/Professional/get_changed_patients" do
-                    timestamp = Date.today
-                    patients_since_now = client.get_changed_patients('01/01/2013')
-                    expect(patients_since_now.length).to eq(339)
+            describe "#get_changed_patients" do
+                it "gets all changed patients since agiven date" do
+                    VCR.use_cassette "AllScriptsAPI/Professional/get_changed_patients" do
+                        timestamp = Date.today
+                        patients_since_now = client.get_changed_patients('01/01/2013')
+                        expect(patients_since_now.length).to eq(339)
+                    end
                 end
+            end
 
-                VCR.use_cassette "AllScriptsAPI/Professional/get_scheduled_patients" do
-                    scheduled_patients = client.get_scheduled_patients(Date.today)
-                    expect(scheduled_patients).to eq([])
+            describe "#get_scheduled_patients" do
+                it "gets all patients scheduled for a specified date" do
+                    VCR.use_cassette "AllScriptsAPI/Professional/get_scheduled_patients" do
+                        scheduled_patients = client.get_scheduled_patients(Date.today)
+                        expect(scheduled_patients).to eq([])
+                    end
                 end
+            end
 
-                VCR.use_cassette "AllScriptsAPI/Professional/upload_pdf" do
-                    filepath = "examples/test.pdf"
-                    patient_id = 1
-                    description = "test.pdf"
-                    response = client.upload_document(patient_id, filepath, description)
-                    expect(response[0]["savedocumentimageinfo"]).to be_an_instance_of(Array)
+            describe "#upload_document" do
+                it "uploads a PDF to a patients record" do
+                    VCR.use_cassette "AllScriptsAPI/Professional/upload_pdf" do
+                        filepath = "examples/test.pdf"
+                        patient_id = 1
+                        description = "test.pdf"
+                        response = client.upload_document(patient_id, filepath, description)
+                        expect(response[0]["savedocumentimageinfo"]).to be_an_instance_of(Array)
+                    end
                 end
             end
         end
     end
 end
+
+
 
 
 RSpec.describe SuperEHR::AthenaAPI do
@@ -268,7 +314,7 @@ RSpec.describe SuperEHR::AthenaAPI do
 
         describe "#get_patients" do
             it "gets all patients for a user" do
-                VCR.use_cassette "AthenaHealthAPI/get_all_patients" do
+                VCR.use_cassette "AthenaHealthAPI/get_all_patients", :record => :all do
                     response = client.get_patients
                     expect(response.length).to eq(1074)
                 end
@@ -278,7 +324,7 @@ RSpec.describe SuperEHR::AthenaAPI do
         describe "#get_changed_patients_ids" do
             it "gets the id's of changed patients since agiven date" do
                 #when running rspec, you must delete this cassette because it calls a new end_time every call
-                VCR.use_cassette "AthenaHealthAPI/get_changed_patients_ids" do
+                VCR.use_cassette "AthenaHealthAPI/get_changed_patients_ids", :record => :all do
                     response = client.get_changed_patients_ids("08/01/2015")
                     expect(response.length).to eq(995)
                 end
@@ -288,7 +334,7 @@ RSpec.describe SuperEHR::AthenaAPI do
         describe "#get_changed_patients" do
             it "gets all changed patients since a given date" do
                 #when running rspec, you must delete this cassette because it calls a new end_time every call
-                VCR.use_cassette "AthenaHealthAPI/get_changed_patients" do
+                VCR.use_cassette "AthenaHealthAPI/get_changed_patients", :record => :all do
                     response = client.get_changed_patients("08/01/2015")
                     expect(response[0]["patientid"]).to eq("3716")
                     expect(response.length).to eq(995)
@@ -316,7 +362,6 @@ RSpec.describe SuperEHR::AthenaAPI do
             end
         end
 
-        #when running rspec, you must delete this cassette because it calls a new end_time every call
     end
 end
 
