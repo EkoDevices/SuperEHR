@@ -520,7 +520,7 @@ module SuperEHR
     def upload_document(patient_id, pdf_location, description, recording, request)
       headers = get_request_headers
       date = Date.today
-      patient = self.get_patient(patient_id)
+      patient = get_patient(patient_id)
       if (patient == nil)
         return -1
       else
