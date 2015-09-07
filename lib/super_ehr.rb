@@ -517,11 +517,12 @@ module SuperEHR
     end
 
     #uploads a pdf of to dr chrono
-    def upload_document(patient_id, pdf_location, description, recording, request)
+    def upload_document(patient_id, pdf_location, description, request, document_id="")
       headers = get_request_headers
       date = Date.today
       patient = get_patient(patient_id)
       if (patient == nil)
+        ## This patient has been removed from the active patients in the users account
         return -1
       else
         file = File.new(pdf_location)
@@ -533,12 +534,12 @@ module SuperEHR
             :document => file
         }
         if request == "post"
-          pdf_upload_request('post', params, headers, recording)
+          chrono_pdf_id = pdf_upload_request('post', params, headers)
         else
-          pdf_upload_request('put', params, headers, recording)
+          chrono_pdf_id = pdf_upload_request('put', params, headers, document_id)
         end
       end
-      return 1
+      return chrono_pdf_id
     end
 
     private
@@ -559,15 +560,15 @@ module SuperEHR
     end
 
     #handles the request to dr crhono
-    def pdf_upload_request(request, params, headers, recording)
+    def pdf_upload_request(request, params, headers, document_id="")
       url = get_request_url("api/documents")
       if request == 'post'
         response = HTTMultiParty.post(url, :query => params, :headers => headers)
-        recording.update_attributes(:chrono_id => response["id"])
+        return response["id"]
       else
-        put_url = url + "/#{recording.chrono_id}"
+        put_url = url + "/#{document_id}"
         response = HTTMultiParty.put(put_url, :query => params, :headers => headers)
-        recording.update_attributes(:chrono_id => response["id"])
+        return response["id"]
       end
     end
 
