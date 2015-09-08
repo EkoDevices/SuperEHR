@@ -566,6 +566,8 @@ module SuperEHR
         response = HTTMultiParty.post(url, :query => params, :headers => headers)
         return response["id"]
       else
+        # sanity check; do a post if the document_id is empty
+        pdf_upload_request('post', params, headers) if document_id.empty?
         put_url = url + "/#{document_id}"
         response = HTTMultiParty.put(put_url, :query => params, :headers => headers)
         return response["id"]
