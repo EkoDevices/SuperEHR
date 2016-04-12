@@ -573,6 +573,7 @@ module SuperEHR
     end
 
     def chrono_request(endpoint, params={})
+      params["page_size"] = 250
       result = []
       while endpoint
         data = make_request("GET", endpoint, params)
