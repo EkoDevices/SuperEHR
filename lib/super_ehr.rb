@@ -5,7 +5,6 @@ require 'httmultiparty'
 require 'builder'
 require 'time' 
 require 'dotenv'
-require 'logger'
 
 Dotenv.load
 
@@ -579,8 +578,6 @@ module SuperEHR
       while endpoint
         data = make_request("GET", endpoint, params)
         if data["results"]
-          Rails.logger "Retrieved data of count"
-          Rails.logger data["results"].count
           result = result | data["results"]
         end
         endpoint = data["next"]
