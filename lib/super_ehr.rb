@@ -436,7 +436,7 @@ module SuperEHR
         raise ArgumentError, "Access Code='#{params[:access_code]}' is blank or Access Token='#{params[:access_token]}' is blank"
       end
       @access_token = params[:access_token]
-      @uri = URI.parse("http://localhost:3000/")
+      @uri = URI.parse("https://hipaa-staging.ekodevices.com")
     end
 
     def get_request_headers
