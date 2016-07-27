@@ -422,6 +422,76 @@ module SuperEHR
 
   end
 
+  class MiExpressCareAPI < BaseEHR
+    attr_reader :access_token
+
+    ### API SPECIFIC HOUSEKEEPING ###
+
+    def initialize(args={})
+      params = {
+        :access_token => ''
+      }
+      params = params.merge(args)
+      if (params[:access_token] == '' )
+        raise ArgumentError, "Access Code='#{params[:access_code]}' is blank or Access Token='#{params[:access_token]}' is blank"
+      end
+      @access_token = params[:access_token]
+      @uri = URI.parse("http://localhost:3000/")
+    end
+
+    def get_request_headers
+      return { 'Authorization' => "#{@access_token}"}
+    end
+
+    def get_request_url(endpoint)
+      return "#{@uri}/#{endpoint}"
+    end
+
+    def get_access_token
+      return @access_token
+    end
+
+
+    ### API CALLS ###
+
+    #uploads record data to endpoint
+    def upload_to_ehr(args)
+      session_id = args[:session].id
+      pdf_file_path = args[:pdf_file_path]
+      sound_file_path = args[:sound_file_path]
+      description = args[:description]
+      recording_meta_data = args[:recording_meta_data]
+
+      headers = get_request_headers
+      date = Date.today
+      pdf_file = File.new(pdf_file_path)
+      sound_file = File.new(sound_file_path)
+
+      params = {
+          :recording_metadata => recording_meta_data,
+          :description => description,
+          :date => date,
+          :sound_file => sound_file,
+          :session_id => session_id,
+          :sound_pdf => pdf_file
+      }
+      response = pdf_upload_request('post', params, headers)
+      return response
+    end
+
+    private
+
+    #handles the request to dr crhono
+    def pdf_upload_request(request, params, headers, document_id="")
+      url = get_request_url("api/v1/users/0/mi_express_care_test")
+      if request == 'post'
+        response = HTTMultiParty.post(url, :query => params, :headers => headers)
+        return response
+      end
+    end
+  end
+
+
   class DrChronoAPI < BaseEHR
     attr_reader :access_token, :refresh_token
 
@@ -633,5 +703,9 @@ module SuperEHR
 
   def self.drchrono_b(access_token, refresh_token, client_id, client_secret, redirect_uri)
     return DrChronoAPI.new({:access_token => access_token, :refresh_token => refresh_token, :client_id => client_id, :client_secret => client_secret, :redirect_uri => redirect_uri})
+  end
+
+  def self.mi_express_care(args)
+    return MiExpressCareAPI.new(args)
   end
 end
