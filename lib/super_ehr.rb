@@ -423,7 +423,7 @@ module SuperEHR
   end
 
   class MiExpressCareAPI < BaseEHR
-    attr_reader :access_token
+    attr_reader :access_token, :uri
 
     ### API SPECIFIC HOUSEKEEPING ###
 
