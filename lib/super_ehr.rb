@@ -436,11 +436,11 @@ module SuperEHR
         raise ArgumentError, "Access Code='#{params[:access_code]}' is blank or Access Token='#{params[:access_token]}' is blank"
       end
       @access_token = params[:access_token]
-      @uri = URI.parse("https://hipaa-staging.ekodevices.com")
+      @uri = URI.parse(params[:base_url])
     end
 
     def get_request_headers
-      return { 'Authorization' => "#{@access_token}"}
+      return { 'X-Auth-Token' => "#{@access_token}"}
     end
 
     def get_request_url(endpoint)
@@ -459,21 +459,17 @@ module SuperEHR
       session_id = args[:session].id
       pdf_file_path = args[:pdf_file_path]
       sound_file_path = args[:sound_file_path]
-      description = args[:description]
       recording_meta_data = args[:recording_meta_data]
 
       headers = get_request_headers
-      date = Date.today
       pdf_file = File.new(pdf_file_path)
       sound_file = File.new(sound_file_path)
 
       params = {
           :recording_metadata => recording_meta_data,
-          :description => description,
-          :date => date,
-          :sound_file => sound_file,
-          :session_id => session_id,
-          :sound_pdf => pdf_file
+          :audio => sound_file,
+          :sessionId => session_id,
+          :pdf => pdf_file
       }
       response = pdf_upload_request('post', params, headers)
       return response
