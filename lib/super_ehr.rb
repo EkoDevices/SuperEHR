@@ -477,9 +477,8 @@ module SuperEHR
 
     private
 
-    #handles the request to dr crhono
     def pdf_upload_request(request, params, headers, document_id="")
-      url = get_request_url("api/v1/users/0/mi_express_care_test")
+      url = get_request_url("upload")
       if request == 'post'
         response = HTTMultiParty.post(url, :query => params, :headers => headers)
         return response
