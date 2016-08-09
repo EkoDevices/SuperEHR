@@ -432,8 +432,8 @@ module SuperEHR
         :access_token => ''
       }
       params = params.merge(args)
-      if (params[:access_token] == '' )
-        raise ArgumentError, "Access Code='#{params[:access_code]}' is blank or Access Token='#{params[:access_token]}' is blank"
+      if (params[:access_token] == '' || params[:access_token] == nil)
+        raise ArgumentError, "Access Token='#{params[:access_token]}' is blank or nil"
       end
       @access_token = params[:access_token]
       @uri = URI.parse(params[:base_url])
