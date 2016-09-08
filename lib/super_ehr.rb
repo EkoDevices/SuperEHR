@@ -456,7 +456,8 @@ module SuperEHR
 
     #uploads record data to endpoint
     def upload_to_ehr(args)
-      session_id = args[:session].id
+      session_id = args[:session].identifier
+      patient_id = args[:session].id
       pdf_file_path = args[:pdf_file_path]
       sound_file_path = args[:sound_file_path]
       recording_meta_data = args[:recording_meta_data]
@@ -469,6 +470,7 @@ module SuperEHR
           :recordingMetadata => recording_meta_data,
           :audio => sound_file,
           :sessionId => session_id,
+          :patientId => patient_id,
           :pdf => pdf_file
       }
       response = pdf_upload_request('post', params, headers)
