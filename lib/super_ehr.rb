@@ -422,6 +422,72 @@ module SuperEHR
 
   end
 
+  class CallNineAPI < BaseEHR
+    attr_reader :access_token, :uri
+
+    ### API SPECIFIC HOUSEKEEPING ###
+
+    def initialize(args={})
+      params = {
+        :access_token => ''
+      }
+      params = params.merge(args)
+      if (params[:access_token] == '' || params[:access_token] == nil)
+        raise ArgumentError, "Access Token='#{params[:access_token]}' is blank or nil"
+      end
+      @access_token = params[:access_token]
+      @uri = URI.parse(params[:base_url])
+    end
+
+    def get_request_headers
+      return { 'X-Auth-Token' => "#{@access_token}"}
+    end
+
+    def get_request_url(endpoint)
+      return "#{@uri}/#{endpoint}"
+    end
+
+    def get_access_token
+      return @access_token
+    end
+
+
+    ### API CALLS ###
+
+    #uploads record data to endpoint
+    def upload_to_ehr(args)
+      session_id = args[:session].identifier
+      patient_id = args[:session].id
+      pdf_file_path = args[:pdf_file_path]
+      sound_file_path = args[:sound_file_path]
+      recording_meta_data = args[:recording_meta_data]
+
+      headers = get_request_headers
+      pdf_file = File.new(pdf_file_path)
+      sound_file = File.new(sound_file_path)
+
+      params = {
+          :recordingMetadata => recording_meta_data,
+          :audio => sound_file,
+          :sessionId => session_id,
+          :patientId => patient_id,
+          :pdf => pdf_file
+      }
+      response = pdf_upload_request('post', params, headers)
+      return response
+    end
+
+    private
+
+    def pdf_upload_request(request, params, headers, document_id="")
+      url = get_request_url("/api/sessions/" + params[:sessionId] + "/eko")
+      if request == 'post'
+        response = HTTMultiParty.post(url, :query => params, :headers => headers)
+        return response
+      end
+    end
+  end
+
   class MiExpressCareAPI < BaseEHR
     attr_reader :access_token, :uri
 
@@ -704,5 +770,9 @@ module SuperEHR
 
   def self.mi_express_care(args)
     return MiExpressCareAPI.new(args)
+  end
+
+  def self.call_nine(args)
+    return CallNineAPI.new(args)
   end
 end
