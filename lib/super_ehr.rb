@@ -480,7 +480,7 @@ module SuperEHR
     private
 
     def pdf_upload_request(request, params, headers, document_id="")
-      url = get_request_url("/api/sessions/" + params[:sessionId] + "/eko")
+      url = get_request_url("api/sessions/" + params[:sessionId] + "/eko")
       if request == 'post'
         response = HTTMultiParty.post(url, :query => params, :headers => headers)
         return response
