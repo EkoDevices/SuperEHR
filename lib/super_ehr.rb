@@ -473,7 +473,11 @@ module SuperEHR
           :patientId => patient_id,
           :pdf => pdf_file
       }
-      response = pdf_upload_request('post', params, headers)
+      if request == "put"
+        response = pdf_upload_request('put', params, headers)
+      else
+        response = pdf_upload_request('post', params, headers)
+      end
       return response
     end
 
@@ -481,10 +485,12 @@ module SuperEHR
 
     def pdf_upload_request(request, params, headers, document_id="")
       url = get_request_url("api/sessions/" + params[:sessionId] + "/eko")
-      if request == 'post'
+      if request == 'put'
+        response = HTTMultiParty.put(url, :query => params, :headers => headers)
+      else
         response = HTTMultiParty.post(url, :query => params, :headers => headers)
-        return response
       end
+      return response
     end
   end
 
@@ -527,6 +533,7 @@ module SuperEHR
       pdf_file_path = args[:pdf_file_path]
       sound_file_path = args[:sound_file_path]
       recording_meta_data = args[:recording_meta_data]
+      request = args[:request]
 
       headers = get_request_headers
       pdf_file = File.new(pdf_file_path)
@@ -539,7 +546,11 @@ module SuperEHR
           :patientId => patient_id,
           :pdf => pdf_file
       }
-      response = pdf_upload_request('post', params, headers)
+      if request == "put"
+        response = pdf_upload_request('put', params, headers)
+      else
+        response = pdf_upload_request('post', params, headers)
+      end
       return response
     end
 
@@ -547,10 +558,12 @@ module SuperEHR
 
     def pdf_upload_request(request, params, headers, document_id="")
       url = get_request_url("upload")
-      if request == 'post'
+      if request == 'put'
+        response = HTTMultiParty.put(url, :query => params, :headers => headers)
+      else
         response = HTTMultiParty.post(url, :query => params, :headers => headers)
-        return response
       end
+      return response
     end
   end
 
