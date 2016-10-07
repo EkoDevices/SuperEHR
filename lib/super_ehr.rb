@@ -456,8 +456,8 @@ module SuperEHR
 
     #uploads record data to endpoint
     def upload_to_ehr(args)
-      session_id = args[:session].identifier
-      patient_id = args[:session].id
+      session_id = args[:patient].identifier
+      patient_id = args[:patient].id
       pdf_file_path = args[:pdf_file_path]
       sound_file_path = args[:sound_file_path]
       recording_meta_data = args[:recording_meta_data]
@@ -530,8 +530,8 @@ module SuperEHR
 
     #uploads record data to endpoint
     def upload_to_ehr(args)
-      session_id = args[:session].identifier
-      patient_id = args[:session].id
+      session_id = args[:patient].identifier
+      patient_id = args[:patient].id
       pdf_file_path = args[:pdf_file_path]
       sound_file_path = args[:sound_file_path]
       recording_meta_data = args[:recording_meta_data]
@@ -603,8 +603,8 @@ module SuperEHR
 
     #uploads record data to endpoint
     def upload_to_ehr(args)
-      session_id = args[:session].identifier
-      patient_id = args[:session].id
+      session_id = args[:patient].identifier
+      patient_id = args[:patient].id
       pdf_file_path = args[:pdf_file_path]
       sound_file_path = args[:sound_file_path]
       recording_meta_data = args[:recording_meta_data]
