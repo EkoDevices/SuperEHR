@@ -419,7 +419,79 @@ module SuperEHR
         end
         return result
       end
+  end
 
+  class LifeLettersAPI < BaseEHR
+    attr_reader :access_token, :uri
+
+    ### API SPECIFIC HOUSEKEEPING ###
+
+    def initialize(args={})
+      params = {
+        :access_token => ''
+      }
+      params = params.merge(args)
+      if (params[:access_token] == '' || params[:access_token] == nil)
+        raise ArgumentError, "Access Token='#{params[:access_token]}' is blank or nil"
+      end
+      @access_token = params[:access_token]
+      @uri = URI.parse(params[:base_url])
+    end
+
+    def get_request_headers
+      return { 'X-Auth-Token' => "#{@access_token}"}
+    end
+
+    def get_request_url(endpoint)
+      return "#{@uri}/#{endpoint}"
+    end
+
+    def get_access_token
+      return @access_token
+    end
+
+
+    ### API CALLS ###
+
+    #uploads record data to endpoint
+    def upload_to_ehr(args)
+      session_id = args[:patient].identifier
+      patient_id = args[:patient].id
+      pdf_file_path = args[:pdf_file_path]
+      sound_file_path = args[:sound_file_path]
+      recording_meta_data = args[:recording_meta_data]
+      request = args[:request]
+
+      headers = get_request_headers
+      pdf_file = File.new(pdf_file_path)
+      sound_file = File.new(sound_file_path)
+
+      params = {
+          :recordingMetadata => recording_meta_data,
+          :audio => sound_file,
+          :patientId => patient_id,
+          :pdf => pdf_file
+      }
+      if request == "put"
+        response = pdf_upload_request('put', params, headers)
+      else
+        response = pdf_upload_request('post', params, headers)
+      end
+      return response
+    end
+
+    private
+
+    def pdf_upload_request(request, params, headers, document_id="")
+      url = get_request_url("readings/" + params[:sessionId] + "/eko_upload")
+
+      if request == 'put'
+        response = HTTMultiParty.put(url, :query => params, :headers => headers)
+      else
+        response = HTTMultiParty.post(url, :query => params, :headers => headers)
+      end
+      return response
+    end
   end
 
   class EClinicalWorksAPI < BaseEHR
@@ -866,5 +938,9 @@ module SuperEHR
 
   def self.e_clinical_works(args)
     return EClinicalWorksAPI.new(args)
+  end
+
+  def self.life_letters(args)
+    return LifeLettersAPI.new(args)
   end
 end
