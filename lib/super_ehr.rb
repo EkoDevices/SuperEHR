@@ -470,6 +470,7 @@ module SuperEHR
           :recordingMetadata => recording_meta_data,
           :audio => sound_file,
           :patientId => patient_id,
+          :sessionId => session_id,
           :pdf => pdf_file
       }
       if request == "put"
@@ -529,7 +530,9 @@ module SuperEHR
     #uploads record data to endpoint
     def upload_to_ehr(args)
       session_id = args[:patient].identifier
-      patient_id = args[:patient].id
+      patient_id = args[:patient].identifier
+      # ideally would be below, but expectations are currently identifier not id
+      #patient_id = args[:patient].id
       pdf_file_path = args[:pdf_file_path]
       sound_file_path = args[:sound_file_path]
       recording_meta_data = args[:recording_meta_data]
@@ -547,7 +550,8 @@ module SuperEHR
           :pdf => pdf_file
       }
       if request == "put"
-        response = pdf_upload_request('put', params, headers)
+        # post on purpose
+        response = pdf_upload_request('post', params, headers)
       else
         response = pdf_upload_request('post', params, headers)
       end
@@ -603,7 +607,9 @@ module SuperEHR
     #uploads record data to endpoint
     def upload_to_ehr(args)
       session_id = args[:patient].identifier
-      patient_id = args[:patient].id
+      patient_id = args[:patient].identifier
+      # ideally would be allow; requirements otherwise for now
+      #patient_id = args[:patient].id
       pdf_file_path = args[:pdf_file_path]
       sound_file_path = args[:sound_file_path]
       recording_meta_data = args[:recording_meta_data]
@@ -621,7 +627,8 @@ module SuperEHR
           :pdf => pdf_file
       }
       if request == "put"
-        response = pdf_upload_request('put', params, headers)
+        # post on purpose
+        response = pdf_upload_request('post', params, headers)
       else
         response = pdf_upload_request('post', params, headers)
       end
