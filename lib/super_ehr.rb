@@ -1101,4 +1101,8 @@ module SuperEHR
   def self.life_letters(args)
     return LifeLettersAPI.new(args)
   end
+
+  def self.doc_24_seven(args)
+    return Doc24Seven.new(args)
+  end
 end
