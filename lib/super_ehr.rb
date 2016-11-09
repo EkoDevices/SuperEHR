@@ -528,8 +528,9 @@ module SuperEHR
 
     #uploads record data to endpoint
     def upload_to_ehr(args)
+      #ideally patient id would be patient.id and session id should patient.identifier. but here we are.
       session_id = args[:patient].identifier
-      patient_id = args[:patient].id
+      patient_id = args[:patient].identifier
       pdf_file_path = args[:pdf_file_path]
       sound_file_path = args[:sound_file_path]
       recording_meta_data = args[:recording_meta_data]
