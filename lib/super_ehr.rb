@@ -541,7 +541,7 @@ module SuperEHR
       sound_file = File.new(sound_file_path)
 
       params = {
-          :recordingMetadata => recording_meta_data,
+          :recordingMetadata => recording_meta_data.to_json,
           :audio => sound_file,
           :patientId => patient_id,
           :sessionId => session_id,
