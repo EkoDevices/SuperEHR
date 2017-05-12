@@ -1020,17 +1020,25 @@ module SuperEHR
       end
     end
 
+
     def chrono_request(endpoint, params={})
       params["page_size"] = 250
       result = []
       while endpoint
         data = make_request("GET", endpoint, params)
+        api_throttled = data["detail"] && data["detail"].include?("Request was throttled")
         if data["results"]
           result = result | data["results"]
+        elsif api_throttled
+          result = data["detail"]
+          endpoint = nil
         end
-        endpoint = data["next"]
-        if endpoint
-          endpoint = endpoint[20..-1]
+        
+        unless api_throttled
+          endpoint = data["next"]
+          if endpoint
+            endpoint = endpoint[20..-1]
+          end
         end
       end
       return result
