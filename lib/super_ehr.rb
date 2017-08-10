@@ -57,11 +57,21 @@ module SuperEHR
       url = get_request_url(endpoint)
 
       if request_type == "GET"
+        Delayed::Worker.logger.info "Get request made"
+        Delayed::Worker.logger.info "Query"
+        Delayed::Worker.logger.info params.inspect
+        Delayed::Worker.logger.info "Headers"
+        Delayed::Worker.logger.info headers.inspect
         response = HTTParty.get(url, :query => params, :headers => headers)
       elsif request_type == "POST"
         if headers.key?("Content-Type") and headers["Content-Type"] == "application/json"
           params = JSON.generate(params)
         end
+        Delayed::Worker.logger.info "Post request made"
+        Delayed::Worker.logger.info "Query"
+        Delayed::Worker.logger.info params.inspect
+        Delayed::Worker.logger.info "Headers"
+        Delayed::Worker.logger.info headers.inspect
         response = HTTParty.post(url, :body => params, :headers => headers)
       else
         puts "Request Type #{request_type} unsupported"
@@ -1011,10 +1021,12 @@ module SuperEHR
     def pdf_upload_request(request, params, headers, document_id="")
       url = get_request_url("api/documents")
       if request == 'post'
+        Delayed::Worker.logger.info "Chrono Upload Post request"
         response = HTTMultiParty.post(url, :query => params, :headers => headers)
         return response["id"]
       else
         put_url = url + "/#{document_id}"
+        Delayed::Worker.logger.info "Chrono Upload Put request"
         response = HTTMultiParty.put(put_url, :query => params, :headers => headers)
         return response["id"]
       end
@@ -1053,6 +1065,7 @@ module SuperEHR
           "client_id" => @client_id,
           "client_secret" => @client_secret
         }
+        Delayed::Worker.logger.info "Exchanging token, no refresh"
         response = HTTParty.post(get_request_url("o/token/"),
                                  :body => post_args)
         @refresh_token = response["refresh_token"]
@@ -1066,6 +1079,7 @@ module SuperEHR
           "client_id" => @client_id,
           "client_secret" => @client_secret
         }
+        Delayed::Worker.logger.info "Exchanging token, refresh present"
         response = HTTParty.post(get_request_url("o/token/"),
                                  :body => post_args)
         @refresh_token = response["refresh_token"]
