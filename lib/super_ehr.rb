@@ -1021,12 +1021,12 @@ module SuperEHR
     def pdf_upload_request(request, params, headers, document_id="")
       url = get_request_url("api/documents")
       if request == 'post'
-        Delayed::Worker.logger.debug "Chrono Upload Post request"
+        Delayed::Worker.logger.info "I, [#{Time.zone.now.iso8601} #1] CHRONO_REQUEST -- : #{Time.zone.now.iso8601} [Worker(delayed_job host:ip-00-0-00-000 pid:1)] Make PDF POST Request for endpoint #{url} and params #{params.inspect} and headers #{headers.inspect}"
         response = HTTMultiParty.post(url, :query => params, :headers => headers)
         return response["id"]
       else
         put_url = url + "/#{document_id}"
-        Delayed::Worker.logger.debug "Chrono Upload Put request"
+        Delayed::Worker.logger.info "I, [#{Time.zone.now.iso8601} #1] CHRONO_REQUEST -- : #{Time.zone.now.iso8601} [Worker(delayed_job host:ip-00-0-00-000 pid:1)] Make PDF PUT Request for endpoint #{put_url} and params #{params.inspect} and headers #{headers.inspect}"
         response = HTTMultiParty.put(put_url, :query => params, :headers => headers)
         return response["id"]
       end
@@ -1037,6 +1037,7 @@ module SuperEHR
       params["page_size"] = 250
       result = []
       while endpoint
+        Delayed::Worker.logger.info "I, [#{Time.zone.now.iso8601} #1] CHRONO_REQUEST -- : #{Time.zone.now.iso8601} [Worker(delayed_job host:ip-00-0-00-000 pid:1)] Make GET Request for endpoint #{endpoint} and params #{params.inspect}"
         data = make_request("GET", endpoint, params)
         api_throttled = data["detail"] && data["detail"].include?("Request was throttled")
         if data["results"]
@@ -1065,7 +1066,7 @@ module SuperEHR
           "client_id" => @client_id,
           "client_secret" => @client_secret
         }
-        Delayed::Worker.logger.debug "Exchanging token, no refresh"
+        Delayed::Worker.logger.info "I, [#{Time.zone.now.iso8601} #1] CHRONO_REQUEST -- : #{Time.zone.now.iso8601} [Worker(delayed_job host:ip-00-0-00-000 pid:1)] Refresh Token When None Present"
         response = HTTParty.post(get_request_url("o/token/"),
                                  :body => post_args)
         @refresh_token = response["refresh_token"]
@@ -1079,7 +1080,7 @@ module SuperEHR
           "client_id" => @client_id,
           "client_secret" => @client_secret
         }
-        Delayed::Worker.logger.debug "Exchanging token, refresh present"
+        Delayed::Worker.logger.info "I, [#{Time.zone.now.iso8601} #1] CHRONO_REQUEST -- : #{Time.zone.now.iso8601} [Worker(delayed_job host:ip-00-0-00-000 pid:1)] Refresh Token When Refresh Token Present"
         response = HTTParty.post(get_request_url("o/token/"),
                                  :body => post_args)
         @refresh_token = response["refresh_token"]
