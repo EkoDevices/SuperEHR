@@ -1037,7 +1037,7 @@ module SuperEHR
       params["page_size"] = 250
       result = []
       while endpoint
-        Delayed::Worker.logger.info "I, [#{Time.zone.now.iso8601} #1] CHRONO_REQUEST -- : #{Time.zone.now.iso8601} [Worker(delayed_job host:ip-00-0-00-000 pid:1)] Make GET Request for endpoint #{endpoint} and params #{params.inspect}"
+        Delayed::Worker.logger.info "I, [#{Time.zone.now.iso8601} #1] CHRONO_REQUEST -- : #{Time.zone.now.iso8601} [Worker(delayed_job host:ip-00-0-00-000 pid:1)] Make GET Request for endpoint #{endpoint} and params #{params.inspect} and headers #{get_request_headers}"
         data = make_request("GET", endpoint, params)
         api_throttled = data["detail"] && data["detail"].include?("Request was throttled")
         if data["results"]
