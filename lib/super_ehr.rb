@@ -1035,15 +1035,19 @@ module SuperEHR
 
     def chrono_request(endpoint, params={})
       params["page_size"] = 250
-      result = []
+      return_hash = {
+        "results" => []
+      }
       while endpoint
         Delayed::Worker.logger.info "I, [#{Time.zone.now.iso8601} #1] CHRONO_REQUEST -- : #{Time.zone.now.iso8601} [Worker(delayed_job host:ip-00-0-00-000 pid:1)] Make GET Request for endpoint #{endpoint} and params #{params.inspect} and headers #{get_request_headers}"
         data = make_request("GET", endpoint, params)
         api_throttled = data["detail"] && data["detail"].include?("Request was throttled")
         if data["results"]
-          result = result | data["results"]
+          return_hash["results"] = return_hash["results"] | data["results"]
+          return_hash["status"] = {"success" => "Complete sync"}
         elsif api_throttled
-          result = data["detail"]
+          return_hash["status"] = {"error" => data["detail"]}
+          return_hash["error_at_request"] = {"endpoint" => endpoint, "params" => params}
           endpoint = nil
         end
         
