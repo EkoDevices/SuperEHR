@@ -1058,7 +1058,7 @@ module SuperEHR
           end
         end
       end
-      return result
+      return return_hash
     end
 
     def exchange_token
