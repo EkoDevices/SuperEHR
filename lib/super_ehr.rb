@@ -1000,6 +1000,35 @@ module SuperEHR
       return chrono_pdf_id
     end
 
+    def chrono_request(endpoint, params={})
+      params["page_size"] = 250
+      return_hash = {
+        "results" => []
+      }
+      while endpoint
+        Delayed::Worker.logger.info "I, [#{Time.zone.now.iso8601} #1] CHRONO_REQUEST -- : #{Time.zone.now.iso8601} [Worker(delayed_job host:ip-00-0-00-000 pid:1)] Make GET Request for endpoint #{endpoint} and params #{params.inspect} and headers #{get_request_headers}"
+        data = make_request("GET", endpoint, params)
+        api_throttled = data["detail"] && data["detail"].include?("Request was throttled")
+        if data["results"]
+          return_hash["results"] = return_hash["results"] | data["results"]
+          return_hash["status"] = {"success" => "Complete sync"}
+        elsif api_throttled
+          return_hash["status"] = {"error" => data["detail"]}
+          return_hash["error_at_request"] = {"endpoint" => endpoint, "params" => params}
+          endpoint = nil
+        end
+        
+        unless api_throttled
+          endpoint = data["next"]
+          if endpoint
+            endpoint = endpoint[20..-1]
+          end
+        end
+      end
+      return return_hash
+    end
+
+
     private
 
     #Checks if there is a document with description for a given patient, if there is
@@ -1032,34 +1061,6 @@ module SuperEHR
       end
     end
 
-
-    def chrono_request(endpoint, params={})
-      params["page_size"] = 250
-      return_hash = {
-        "results" => []
-      }
-      while endpoint
-        Delayed::Worker.logger.info "I, [#{Time.zone.now.iso8601} #1] CHRONO_REQUEST -- : #{Time.zone.now.iso8601} [Worker(delayed_job host:ip-00-0-00-000 pid:1)] Make GET Request for endpoint #{endpoint} and params #{params.inspect} and headers #{get_request_headers}"
-        data = make_request("GET", endpoint, params)
-        api_throttled = data["detail"] && data["detail"].include?("Request was throttled")
-        if data["results"]
-          return_hash["results"] = return_hash["results"] | data["results"]
-          return_hash["status"] = {"success" => "Complete sync"}
-        elsif api_throttled
-          return_hash["status"] = {"error" => data["detail"]}
-          return_hash["error_at_request"] = {"endpoint" => endpoint, "params" => params}
-          endpoint = nil
-        end
-        
-        unless api_throttled
-          endpoint = data["next"]
-          if endpoint
-            endpoint = endpoint[20..-1]
-          end
-        end
-      end
-      return return_hash
-    end
 
     def exchange_token
       if @refresh_token == '' || @refresh_token == nil
