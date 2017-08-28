@@ -930,6 +930,7 @@ module SuperEHR
     # Get the patient using patient id from our database
     def get_patient(patient_id)
       patients = get_patients
+      patients = patients["results"]
       for patient in patients
         if patient["id"] == patient_id
           return patient
