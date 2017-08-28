@@ -881,7 +881,7 @@ module SuperEHR
 
 
   class DrChronoAPI < BaseEHR
-    attr_reader :access_token, :refresh_token
+    attr_reader :access_token, :refresh_token, :expires_at
 
     ### API SPECIFIC HOUSEKEEPING ###
 
@@ -891,6 +891,7 @@ module SuperEHR
                 :refresh_token => '',
                 :client_id => '',
                 :client_secret => '',
+                :expires_at => '',
                 :redirect_uri => ''
               }
       params = params.merge(args)
@@ -903,6 +904,7 @@ module SuperEHR
       @redirect_uri = params[:redirect_uri]
       @access_token = params[:access_token]
       @refresh_token = params[:refresh_token]
+      @expires_at = params[:expires_at]
       @uri = URI.parse("https://drchrono.com")
       exchange_token
     end
@@ -1104,12 +1106,12 @@ module SuperEHR
     return AthenaAPI.new(version, key, secret, practice_id)
   end
 
-  def self.drchrono(access_code, client_id, client_secret, redirect_uri)
-    return DrChronoAPI.new({:access_code => access_code, :client_id => client_id, :client_secret => client_secret, :redirect_uri => redirect_uri})
+  def self.drchrono(access_code, client_id, client_secret, redirect_uri, expires_at = '')
+    return DrChronoAPI.new({:access_code => access_code, :client_id => client_id, :client_secret => client_secret, :redirect_uri => redirect_uri, :expires_at => expires_at})
   end
 
-  def self.drchrono_b(access_token, refresh_token, client_id, client_secret, redirect_uri)
-    return DrChronoAPI.new({:access_token => access_token, :refresh_token => refresh_token, :client_id => client_id, :client_secret => client_secret, :redirect_uri => redirect_uri})
+  def self.drchrono_b(access_token, refresh_token, client_id, client_secret, redirect_uri, expires_at = '')
+    return DrChronoAPI.new({:access_token => access_token, :refresh_token => refresh_token, :client_id => client_id, :client_secret => client_secret, :redirect_uri => redirect_uri, :expires_at => expires_at})
   end
 
   def self.mi_express_care(args)
