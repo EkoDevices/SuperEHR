@@ -57,21 +57,11 @@ module SuperEHR
       url = get_request_url(endpoint)
 
       if request_type == "GET"
-        Delayed::Worker.logger.debug "Get request made"
-        Delayed::Worker.logger.debug "Query"
-        Delayed::Worker.logger.debug params.inspect
-        Delayed::Worker.logger.debug "Headers"
-        Delayed::Worker.logger.debug headers.inspect
         response = HTTParty.get(url, :query => params, :headers => headers)
       elsif request_type == "POST"
         if headers.key?("Content-Type") and headers["Content-Type"] == "application/json"
           params = JSON.generate(params)
         end
-        Delayed::Worker.logger.debug "Post request made"
-        Delayed::Worker.logger.debug "Query"
-        Delayed::Worker.logger.debug params.inspect
-        Delayed::Worker.logger.debug "Headers"
-        Delayed::Worker.logger.debug headers.inspect
         response = HTTParty.post(url, :body => params, :headers => headers)
       else
         puts "Request Type #{request_type} unsupported"
@@ -993,12 +983,12 @@ module SuperEHR
             :document => file
         }
         if request == "post"
-          chrono_pdf_id = pdf_upload_request('post', params, headers)
+          response = pdf_upload_request('post', params, headers)
         else
-          chrono_pdf_id = pdf_upload_request('put', params, headers, document_id)
+          response = pdf_upload_request('put', params, headers, document_id)
         end
       end
-      return chrono_pdf_id
+      return response
     end
 
     def chrono_request(endpoint, params={})
@@ -1035,7 +1025,6 @@ module SuperEHR
     #Checks if there is a document with description for a given patient, if there is
     def check_document(patient_id, description)
       url = "api/documents"
-      headers = get_request_headers
       params = {:patient => patient_id}
 
       patient_documents = chrono_request(url, params)
@@ -1053,12 +1042,12 @@ module SuperEHR
       if request == 'post'
         Delayed::Worker.logger.info "I, [#{Time.zone.now.iso8601} #1] CHRONO_REQUEST -- : #{Time.zone.now.iso8601} [Worker(delayed_job host:ip-00-0-00-000 pid:1)] Make PDF POST Request for endpoint #{url} and params #{params.inspect} and headers #{headers.inspect}"
         response = HTTMultiParty.post(url, :query => params, :headers => headers)
-        return response["id"]
+        return response
       else
         put_url = url + "/#{document_id}"
         Delayed::Worker.logger.info "I, [#{Time.zone.now.iso8601} #1] CHRONO_REQUEST -- : #{Time.zone.now.iso8601} [Worker(delayed_job host:ip-00-0-00-000 pid:1)] Make PDF PUT Request for endpoint #{put_url} and params #{params.inspect} and headers #{headers.inspect}"
         response = HTTMultiParty.put(put_url, :query => params, :headers => headers)
-        return response["id"]
+        return response
       end
     end
 
