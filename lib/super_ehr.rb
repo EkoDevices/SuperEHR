@@ -969,14 +969,15 @@ module SuperEHR
     def upload_document(patient_id, pdf_location, description, request, document_id="")
       headers = get_request_headers
       date = Date.today
-      patient = get_patient(patient_id)
-      if (patient == nil)
-        ## This patient has been removed from the active patients in the users account
+      result = get_patient(patient_id)
+      if (result == nil)
+        ## This patient has been removed from the active patients in the users account or the request was throttled
+        Delayed::Worker.logger.info "I, [#{Time.zone.now.iso8601} #1] CHRONO_REQUEST -- : #{Time.zone.now.iso8601} [Worker(delayed_job host:ip-00-0-00-000 pid:1)] No Patient found, response #{result.inspect}"
         return -1
       else
         file = File.new(pdf_location)
         params = {
-            :doctor => /\/api\/doctors\/.*/.match(patient["doctor"]),
+            :doctor => /\/api\/doctors\/.*/.match(result["doctor"]),
             :patient => "/api/patients/#{patient_id}",
             :description => description,
             :date => date,
