@@ -920,13 +920,17 @@ module SuperEHR
     # Get the patient using patient id from our database
     def get_patient(patient_id)
       patients = get_patients
+      status = patients["status"]
+      if status["error"]
+        status["error_at_request"] = patients["error_at_request"]
+      end
       patients = patients["results"]
       for patient in patients
         if patient["id"] == patient_id
           return patient
         end
       end
-      return nil
+      return status
     end
 
     def get_patients(params={})
@@ -969,14 +973,19 @@ module SuperEHR
     def upload_document(patient_id, pdf_location, description, request, document_id="")
       headers = get_request_headers
       date = Date.today
-      patient = get_patient(patient_id)
-      if (patient == nil)
+      result = get_patient(patient_id)
+      if (result["error"])
+        ## This patient retrieve had an error, likely request was throttled
+        Delayed::Worker.logger.info "I, [#{Time.zone.now.iso8601} #1] CHRONO_REQUEST -- : #{Time.zone.now.iso8601} [Worker(delayed_job host:ip-00-0-00-000 pid:1)] No Patient     found, response #{result.inspect}; request was likely throttled"
+        return result
+      elsif (result["success"])
         ## This patient has been removed from the active patients in the users account
-        return -1
+        Delayed::Worker.logger.info "I, [#{Time.zone.now.iso8601} #1] CHRONO_REQUEST -- : #{Time.zone.now.iso8601} [Worker(delayed_job host:ip-00-0-00-000 pid:1)] No Patient     found, response #{result.inspect}; this patient has been removed from the active patients in the user's account or they are synced with another account"
+        return result
       else
         file = File.new(pdf_location)
         params = {
-            :doctor => /\/api\/doctors\/.*/.match(patient["doctor"]),
+            :doctor => /\/api\/doctors\/.*/.match(result["doctor"]),
             :patient => "/api/patients/#{patient_id}",
             :description => description,
             :date => date,
@@ -987,8 +996,8 @@ module SuperEHR
         else
           response = pdf_upload_request('put', params, headers, document_id)
         end
+        return response
       end
-      return response
     end
 
     def chrono_request(endpoint, params={})
