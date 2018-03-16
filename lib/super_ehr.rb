@@ -993,7 +993,7 @@ module SuperEHR
     end
 
     def chrono_request(endpoint, params={})
-      params["page_size"] = 250
+      params["page_size"] = 250 if endpoint && endpoint.index("250") == -1
       return_hash = {
         "results" => []
       }
