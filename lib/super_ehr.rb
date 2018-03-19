@@ -990,11 +990,18 @@ module SuperEHR
     end
 
     def chrono_request(endpoint, params={})
-      params["page_size"] = 250
       return_hash = {
         "results" => []
       }
+      since = params[:since] || params["since"]
       while endpoint
+        params["page_size"] = 250 if endpoint && endpoint.index("250") == -1
+        if since && endpoint && endpoint.index("since") != -1
+          params.delete("since")
+          params.delete(:since)
+        elsif since && endpoint && endpoint.index("since") == -1
+          params["since"] = since
+        end
         Delayed::Worker.logger.info "I, [#{Time.zone.now.iso8601} #1] CHRONO_REQUEST -- : #{Time.zone.now.iso8601} [Worker(delayed_job host:ip-00-0-00-000 pid:1)] Make GET Request for endpoint #{endpoint} and params #{params.inspect} and headers #{get_request_headers}"
         data = make_request("GET", endpoint, params)
         api_throttled = data["detail"] && data["detail"].include?("Request was throttled")
@@ -1012,10 +1019,6 @@ module SuperEHR
           if endpoint
             endpoint = endpoint[20..-1]
           end
-          # has become part of the endpoint
-          params.delete(:since)
-          params.delete("page_size")
-          params.delete(:page_size)
         end
       end
       return return_hash
