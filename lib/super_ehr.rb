@@ -973,6 +973,7 @@ module SuperEHR
     def upload_document(patient_id, pdf_location, description, request, document_id="")
       chrono_user_data_response = chrono_request("/api/users")
       if chrono_user_data_response["status"] && chrono_user_data_response["status"]["error"]
+        chrono_user_data_response["status"]["error_at_request"] = chrono_user_data_response["error_at_request"]
         return chrono_user_data_response["status"]["error"]
       else
         doctor_response = chrono_user_data_response["results"][0]["doctor"]
