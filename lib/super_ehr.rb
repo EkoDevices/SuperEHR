@@ -1015,17 +1015,20 @@ module SuperEHR
         if data["results"]
           return_hash["results"] = return_hash["results"] | data["results"]
           return_hash["status"] = {"success" => "Complete sync"}
+          if endpoint == "/api/users"
+            endpoint = nil
+          else
+            endpoint = data["next"]
+            if endpoint
+              endpoint = endpoint[20..-1]
+            end
+          end
         elsif api_throttled
           return_hash["status"] = {"error" => data["detail"]}
           return_hash["error_at_request"] = {"endpoint" => endpoint, "params" => params}
           endpoint = nil
-        end
-        
-        unless api_throttled || endpoint == "/api/users"
-          endpoint = data["next"]
-          if endpoint
-            endpoint = endpoint[20..-1]
-          end
+        else
+          Delayed::Worker.logger.info "I, [#{Time.zone.now.iso8601} #1] CHRONO_REQUEST -- : #{Time.zone.now.iso8601} [Worker(delayed_job host:ip-00-0-00-000 pid:1)] Neither throttled nor results found    , #{data.inspect}"
         end
       end
       return return_hash
