@@ -973,31 +973,20 @@ module SuperEHR
     def upload_document(patient_id, pdf_location, description, request, document_id="")
       headers = get_request_headers
       date = Date.today
-      result = get_patient(patient_id)
-      if (result["error"])
-        ## This patient retrieve had an error, likely request was throttled
-        Delayed::Worker.logger.info "I, [#{Time.zone.now.iso8601} #1] CHRONO_REQUEST -- : #{Time.zone.now.iso8601} [Worker(delayed_job host:ip-00-0-00-000 pid:1)] No Patient     found, response #{result.inspect}; request was likely throttled"
-        return result
-      elsif (result["success"])
-        ## This patient has been removed from the active patients in the users account
-        Delayed::Worker.logger.info "I, [#{Time.zone.now.iso8601} #1] CHRONO_REQUEST -- : #{Time.zone.now.iso8601} [Worker(delayed_job host:ip-00-0-00-000 pid:1)] No Patient     found, response #{result.inspect}; this patient has been removed from the active patients in the user's account or they are synced with another account"
-        return result
+      file = File.new(pdf_location)
+      params = {
+          :doctor => /\/api\/doctors\/.*/.match(result["doctor"]),
+          :patient => "/api/patients/#{patient_id}",
+          :description => description,
+          :date => date,
+          :document => file
+      }
+      if request == "post"
+        response = pdf_upload_request('post', params, headers)
       else
-        file = File.new(pdf_location)
-        params = {
-            :doctor => /\/api\/doctors\/.*/.match(result["doctor"]),
-            :patient => "/api/patients/#{patient_id}",
-            :description => description,
-            :date => date,
-            :document => file
-        }
-        if request == "post"
-          response = pdf_upload_request('post', params, headers)
-        else
-          response = pdf_upload_request('put', params, headers, document_id)
-        end
-        return response
+        response = pdf_upload_request('put', params, headers, document_id)
       end
+      return response
     end
 
     def chrono_request(endpoint, params={})
