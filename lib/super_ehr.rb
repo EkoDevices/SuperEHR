@@ -943,7 +943,7 @@ module SuperEHR
         date = date.gsub(/\//, '-')
         date = Date.strptime(date, '%m-%d-%Y').ios8601
       end
-      return get_patients({:since => date})
+      return get_patients({"since" => date})
     end
 
     def get_changed_patients_ids(ts)
@@ -999,13 +999,16 @@ module SuperEHR
       return_hash = {
         "results" => []
       }
-      since = params[:since] || params["since"]
+      since = params["since"]
       while endpoint
-        params["page_size"] = 250 if endpoint && endpoint.index("250").nil?
-        if since && endpoint && !endpoint.index("since").nil?
+        if !endpoint.index("page_size").nil?
+          params.delete("page_size")
+        else
+          params["page_size"] = 250
+        end
+        if since && !endpoint.index("since").nil?
           params.delete("since")
-          params.delete(:since)
-        elsif since && endpoint && endpoint.index("since").nil?
+        elsif since
           params["since"] = since
         end
         Delayed::Worker.logger.info "I, [#{Time.zone.now.iso8601} #1] CHRONO_REQUEST -- : #{Time.zone.now.iso8601} [Worker(delayed_job host:ip-00-0-00-000 pid:1)] Make GET Request for endpoint #{endpoint} and params #{params.inspect} and headers #{get_request_headers}"
