@@ -975,13 +975,13 @@ module SuperEHR
       if chrono_user_data_response["status"] && chrono_user_data_response["status"]["error"]
         return chrono_user_data_response
       else
-        doctor_response = chrono_user_data_response["results"][0]["doctor"]
+        doctor_id = chrono_user_data_response["results"][0]["doctor"]
         headers = get_request_headers
         date = Date.today
         file = File.new(pdf_location)
         params = {
-            :doctor => /\/api\/doctors\/.*/.match(doctor_response),
-            :patient => "/api/patients/#{patient_id}",
+            :doctor => doctor_id,
+            :patient => patient_id,
             :description => description,
             :date => date,
             :document => file
