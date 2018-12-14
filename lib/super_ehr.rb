@@ -970,18 +970,18 @@ module SuperEHR
     end
 
     #uploads a pdf of to dr chrono
-    def upload_document(patient_id, pdf_location, description, request, document_id="")
+    def upload_document(patient_id, pdf_location, description, request, document_id="", api_version = :v4)
       chrono_user_data_response = chrono_request("/api/users")
       if chrono_user_data_response["status"] && chrono_user_data_response["status"]["error"]
         return chrono_user_data_response
       else
-        doctor_response = chrono_user_data_response["results"][0]["doctor"]
+        doctor_id = chrono_user_data_response["results"][0]["doctor"]
         headers = get_request_headers
         date = Date.today
         file = File.new(pdf_location)
         params = {
-            :doctor => /\/api\/doctors\/.*/.match(doctor_response),
-            :patient => "/api/patients/#{patient_id}",
+            :doctor => api_version == :v4 ? doctor_id : /\/api\/doctors\/.*/.match(doctor_id),
+            :patient => api_version == :v4 ? patient_id : "/api/patients/#{patient_id}",
             :description => description,
             :date => date,
             :document => file
@@ -990,6 +990,11 @@ module SuperEHR
           response = pdf_upload_request('post', params, headers)
         else
           response = pdf_upload_request('put', params, headers, document_id)
+        end
+        # for backwards compatibility with v1, intended to be removed along with the api_version parameter in the method upload_document and the params check for api_version after successful migration
+        patient_response = response.parsed_response["patient"]
+        if response.code == 400 && patient_response == ["Invalid hyperlink - No URL match."]
+          upload_document(patient_id, pdf_location, description, request, document_id, :v1)
         end
         return response
       end
